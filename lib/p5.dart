@@ -6,10 +6,11 @@ import "dart:math";
 import "dart:ui";
 import "dart:typed_data";
 
+// ignore: must_be_immutable
 class PWidget extends StatelessWidget {
-  PPainter painter;
+  PPainter? painter;
 
-  PWidget(PPainter p) {
+  PWidget(PPainter? p) {
     painter = p;
   }
 
@@ -19,42 +20,41 @@ class PWidget extends StatelessWidget {
 
 //    print(painter);
     return new Container(
-      width: painter.fillParent ? null : painter.width.toDouble(),
-      height: painter.fillParent ? null : painter.height.toDouble(),
-      constraints: painter.fillParent ? BoxConstraints.expand() : null, //new
+      width: painter!.fillParent ? null : painter!.width.toDouble(),
+      height: painter!.fillParent ? null : painter!.height.toDouble(),
+      constraints: painter!.fillParent ? BoxConstraints.expand() : null, //new
       margin: const EdgeInsets.all(0.0),
       child: new ClipRect(
           child: new CustomPaint(
-            painter: painter,
-            child: new GestureDetector(
-              // The gesture detector needs to be declared here so it can
-              // access the context from the CustomPaint, which allows to
-              // transforms global positions into local positions relative
-              // to the widget.
-              onTapDown: (details) {
-                painter.onTapDown(context, details);
-              },
-              onPanStart: (details) {
-                painter.onDragStart(context, details);
-              },
-              onPanUpdate: (details) {
-                painter.onDragUpdate(context, details);
-              },
-              onTapUp: (details) {
-                painter.onTapUp(context, details);
-              },
+        painter: painter,
+        child: new GestureDetector(
+          // The gesture detector needs to be declared here so it can
+          // access the context from the CustomPaint, which allows to
+          // transforms global positions into local positions relative
+          // to the widget.
+          onTapDown: (details) {
+            painter!.onTapDown(context, details);
+          },
+          onPanStart: (details) {
+            painter!.onDragStart(context, details);
+          },
+          onPanUpdate: (details) {
+            painter!.onDragUpdate(context, details);
+          },
+          onTapUp: (details) {
+            painter!.onTapUp(context, details);
+          },
 //              onTapCancel: (details) {
 //
 //              },
 //              onPanCancel: (details) {
 //
 //              },
-              onPanEnd: (details) {
-                painter.onDragEnd(context, details);
-              },
-            ),
-          )
-      ),
+          onPanEnd: (details) {
+            painter!.onDragEnd(context, details);
+          },
+        ),
+      )),
     );
   }
 }
@@ -65,8 +65,9 @@ class PWidget extends StatelessWidget {
 // https://raw.githubusercontent.com/flutter/website/master/_includes/code/animation/animate1/main.dart
 // https://raw.githubusercontent.com/flutter/website/master/_includes/code/animation/animate3/main.dart
 class PAnimator extends AnimationController {
-  PAnimator(TickerProvider v) :
-        super.unbounded(duration: const Duration(milliseconds: 2000), vsync: v) {
+  PAnimator(TickerProvider v)
+      : super.unbounded(
+            duration: const Duration(milliseconds: 2000), vsync: v) {
     addStatusListener((status) {
       // Loop animation by reversing/forward when status changes.
       if (status == AnimationStatus.completed) {
@@ -83,28 +84,28 @@ class PAnimator extends AnimationController {
 }
 
 class PConstants {
-  static int OPEN  = 0;
-  static int CLOSE = 1;
+  static const int OPEN = 0;
+  static const int CLOSE = 1;
 
-  static int LINES   = 1;
-  static int POINTS  = 2;
-  static int POLYGON = 3;
+  static const int LINES = 1;
+  static const int POINTS = 2;
+  static const int POLYGON = 3;
 
-  static final int SQUARE   = 1 << 0; // called 'butt' in the svg spec
-  static final int ROUND    = 1 << 1;
-  static final int PROJECT  = 1 << 2;  // called 'square' in the svg spec
+  static const int SQUARE = 1 << 0; // called 'butt' in the svg spec
+  static const int ROUND = 1 << 1;
+  static const int PROJECT = 1 << 2; // called 'square' in the svg spec
 
-  static final int MITER    = 1 << 3;
-  static final int BEVEL    = 1 << 5;
+  static const int MITER = 1 << 3;
+  static const int BEVEL = 1 << 5;
 }
 
 class PPainter extends ChangeNotifier implements CustomPainter {
   bool fillParent = false;
   int width = 100;
   int height = 100;
-  Canvas paintCanvas;
-  Size paintSize;
-  Rect canvasRect;
+  late Canvas paintCanvas;
+  late Size paintSize;
+  late Rect canvasRect;
 
   int frameCount = 0;
 
@@ -119,7 +120,7 @@ class PPainter extends ChangeNotifier implements CustomPainter {
   bool useFill = true;
   bool useStroke = true;
 
-  var vertices = List<Offset>();
+  List<Offset> vertices = [];
   Path path = new Path();
   var shapeMode = PConstants.POLYGON;
 
@@ -129,7 +130,7 @@ class PPainter extends ChangeNotifier implements CustomPainter {
     redraw();
   }
 
-  bool hitTest(Offset position) => null;
+  bool? hitTest(Offset position) => null;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -195,7 +196,7 @@ class PPainter extends ChangeNotifier implements CustomPainter {
 
   void onTapDown(BuildContext context, TapDownDetails details) {
 //    print("onTapDown");
-    final RenderBox box = context.findRenderObject();
+    final RenderBox box = context.findRenderObject() as RenderBox;
     final Offset offset = box.globalToLocal(details.globalPosition);
     updatePointer(offset);
     mousePressed();
@@ -204,7 +205,7 @@ class PPainter extends ChangeNotifier implements CustomPainter {
 
   void onTapUp(BuildContext context, TapUpDetails details) {
 //    print("onTapUp");
-    final RenderBox box = context.findRenderObject();
+    final RenderBox box = context.findRenderObject() as RenderBox;
     final Offset offset = box.globalToLocal(details.globalPosition);
     updatePointer(offset);
     mouseReleased();
@@ -213,7 +214,7 @@ class PPainter extends ChangeNotifier implements CustomPainter {
 
   void onDragStart(BuildContext context, DragStartDetails details) {
 //    print("onDragStart");
-    final RenderBox box = context.findRenderObject();
+    final RenderBox box = context.findRenderObject() as RenderBox;
     final Offset offset = box.globalToLocal(details.globalPosition);
     updatePointer(offset);
     mousePressed();
@@ -222,7 +223,7 @@ class PPainter extends ChangeNotifier implements CustomPainter {
 
   void onDragUpdate(BuildContext context, DragUpdateDetails details) {
 //    print("onDragUpdate");
-    final RenderBox box = context.findRenderObject();
+    final RenderBox box = context.findRenderObject() as RenderBox;
     final Offset offset = box.globalToLocal(details.globalPosition);
     updatePointer(offset);
     mouseDragged();
@@ -247,19 +248,17 @@ class PPainter extends ChangeNotifier implements CustomPainter {
     height = h;
   }
 
-  void setup() {
-  }
+  void setup() {}
 
-  void draw() {
-  }
+  void draw() {}
 
   void redraw() {
     frameCount++;
     notifyListeners();
   }
 
-  Color color(num r, num g, num b, [num a=255]) {
-    return Color.fromRGBO(r, g, b, a/255);
+  Color color(num r, num g, num b, [num a = 255]) {
+    return Color.fromRGBO(r as int, g as int, b as int, a / 255);
   }
 
   void background(Color color) {
@@ -289,12 +288,15 @@ class PPainter extends ChangeNotifier implements CustomPainter {
   }
 
   void strokeJoin(StrokeJoin join) {
+    // ignore: unrelated_type_equality_checks
     if (join == PConstants.BEVEL) {
       strokePaint.strokeJoin = StrokeJoin.bevel;
     }
+    // ignore: unrelated_type_equality_checks
     if (join == PConstants.MITER) {
       strokePaint.strokeJoin = StrokeJoin.miter;
     }
+    // ignore: unrelated_type_equality_checks
     if (join == PConstants.ROUND) {
       strokePaint.strokeJoin = StrokeJoin.round;
     }
@@ -314,7 +316,8 @@ class PPainter extends ChangeNotifier implements CustomPainter {
   }
 
   void ellipse(num x, num y, num w, num h) {
-    final rect = new Offset(x - w/2, y - h/2) & new Size(w, h);
+    final rect =
+        new Offset(x - w / 2, y - h / 2) & new Size(w as double, h as double);
     if (useFill) {
       paintCanvas.drawOval(rect, fillPaint);
     }
@@ -325,13 +328,14 @@ class PPainter extends ChangeNotifier implements CustomPainter {
 
   void line(num x1, num y1, num x2, num y2) {
     if (useStroke) {
-      paintCanvas.drawLine(new Offset(x1, y1), new Offset(x2, y2), strokePaint);
+      paintCanvas.drawLine(new Offset(x1 as double, y1 as double),
+          new Offset(x2 as double, y2 as double), strokePaint);
     }
   }
 
   void point(num x, num y) {
     if (useStroke) {
-      var points = [new Offset(x, y)];
+      var points = [new Offset(x as double, y as double)];
       paintCanvas.drawPoints(PointMode.points, points, strokePaint);
     }
   }
@@ -346,7 +350,8 @@ class PPainter extends ChangeNotifier implements CustomPainter {
   }
 
   void rect(num x, num y, num w, num h) {
-    final rect = new Offset(x.toDouble(), y.toDouble()) & new Size(w.toDouble(), h.toDouble());
+    final rect = new Offset(x.toDouble(), y.toDouble()) &
+        new Size(w.toDouble(), h.toDouble());
     if (useFill) {
       paintCanvas.drawRect(rect, fillPaint);
     }
@@ -375,8 +380,11 @@ class PPainter extends ChangeNotifier implements CustomPainter {
   void endShape([int mode = 0]) {
     if (0 < vertices.length) {
       if (shapeMode == PConstants.POINTS || shapeMode == PConstants.LINES) {
-        var vlist = List<double>();
-        for (var v in vertices) { vlist.add(v.dx); vlist.add(v.dy); }
+        List<double> vlist = [];
+        for (var v in vertices) {
+          vlist.add(v.dx);
+          vlist.add(v.dy);
+        }
         var raw = Float32List.fromList(vlist);
         if (shapeMode == PConstants.POINTS) {
           paintCanvas.drawRawPoints(PointMode.points, raw, strokePaint);
@@ -424,11 +432,11 @@ class PPainter extends ChangeNotifier implements CustomPainter {
     paintCanvas.restore();
   }
 
-  void mousePressed() { }
+  void mousePressed() {}
 
-  void mouseDragged() { }
+  void mouseDragged() {}
 
-  void mouseReleased() { }
+  void mouseReleased() {}
 }
 
 class PVector {
