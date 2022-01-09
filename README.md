@@ -1,5 +1,7 @@
 # p5.dart
 
+## Incomplete and Lacks a lot of p5 functions
+
 A Dart implementation of the [Processing API](https://processing.org/reference/) for [Flutter](https://flutter.io/). Processing is a software sketchbook and a language for learning how to code within the context of the visual arts.
 
 **Note:** this is an experimental library that only implements a few functions from the Processing API. Class names and structure will likely change in the future. And feel free to fork and play around with the code :-)
